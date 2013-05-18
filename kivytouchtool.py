@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import logging
+log = logging.getLogger("KTT")
+
 import gtk
 import sys, dbus, subprocess, os
 
@@ -42,7 +45,7 @@ def DBusInterface():
         obj.activate(*args)
 ####
 
-gestures = dict(
+GESTURES = dict(
     move_down = [
         "eNq1l01uGzkQhfd9EWszBuufdYFkG8AHGDi2YAvJ2IKkzExuP1UlqdWLREIm4KIgqfX4kc1HsoqrzZfN39/vX9b7w7fdevp4+ty2afW8henh7u3xr/XdtMX4Gh807R/u9ofd+5f1Pn7ytPq6lWn1Q8hDyaatJsqi/fZ983bIZj2b+U+afUrVtIXjCHII36MJ4PSh3TOaNGWVzgJIUsP5N/+m/LsJAQl37uLuhNP+8+P1Trg6kenlyKfuoNabqXeQrtP+5f+S663BZnI0F2FhoGCRym+ge6F9ABpr0hHOaOTWjBpqAxGw3yFjkWkAuTzE2UMQ6gAtFkgwWNUuaPYuAIZELbrVfptdLqINYZeN6CPYVD7S7GNTDSY0ULRuwLxgsyNbi70k0U8M5ya7nCQawi4vSYawy0s6eflHIGKLsxgYYcy34GLCURB6xx4bK9xguA0vM8mHwLncZBgDLzuZxsDLT5YZjhyntrTurcVKVz2fsNlvHLjhpXVUFwrdbXo5yjaIXpayj6FLeSowiF6mCg2il6syyFUpV+XiKjcCZdamhhxpYQE3UO3kgOYQJyTfhpep4kPgWp4qjIGXpUpj4OWoyhh4GaoXQwUyoQmrEzN2u8AhqIjo5o26ut3OdFqGqg+BWxlqMAZehhqNgZehdjFUwkePZMlxuHdTWcJN85FGzRtb1SXhWeU/7dbrt7lmN82i3WxaVR0eMI2xmEYesCiU46FxZuI5psM2Bvr4K3K/JqeYn36J0Pd2TY/uuIjUwzV9FFa4iNTjFb265gaZI/U061ukSWjEZhJHY+mNaRGcej7rMXKuZ9JVa96O+kixcIkav5z0YIbaoyByFNJWyVmjau46R41HT/rYs8jawYl6dJbyWA9tETWddpSTo7WoMqPkwgbxNOVxtcB+iZSfzKXFmxLmWZH6KNkWYan3s751AgTsnu9dk8kxt76I5PvJXTL3To2ULa9k8FN9uHtcua/rzcvrIdasH68a0jGS0znqzvjP5vnwmoq5mIybkzR0jR5iqYfk8P51vXt8e8rbr3NV6Pn4tN/+3O7en789VS/xxnTPWRTF5SUvp3kv/Xz/H5Ij87w="
     ],
@@ -60,6 +63,85 @@ gestures = dict(
     ]
 );
 
+class Actions():
+    def three_swipe_up(self):
+        pass
+
+    def three_swipe_down(self):
+        pass
+
+    def three_swipe_left(self):
+        while gtk.events_pending():
+            gtk.main_iteration()
+        screen.get_workspace_neighbor(screen.get_active_workspace(), wnck.MOTION_LEFT).activate(0)
+
+    def three_swipe_right(self):
+        while gtk.events_pending():
+            gtk.main_iteration()
+        screen.get_workspace_neighbor(screen.get_active_workspace(), wnck.MOTION_RIGHT).activate(0)
+
+    def two_swipe_up(self):
+        pass
+
+    def two_swipe_down(self):
+        pass
+
+    def two_swipe_left(self):
+        pass
+
+    def two_swipe_right(self):
+        pass
+
+    def dispatch(self, gestures, gdb):
+        down = up = left = right = 0
+        for gesture in gestures:
+            if gesture is None:
+                log.warning("Undefined touch")
+                continue
+            gesture = gesture[1]
+            if gesture:
+                if   gesture.name == 'move_down':
+                    down += 1
+                elif gesture.name == 'move_up':
+                    up += 1
+                elif gesture.name == 'move_left':
+                    left += 1
+                elif gesture.name == 'move_right':
+                    right += 1
+                else:
+                    log.warn("Unknown gesture")
+            else:
+                log.info("gesture: \t", gdb.gesture_to_str(gesture))
+                for gest_n, gest_r in GESTURES.iteritems():
+                    s = gest_n, "\t",
+                    for g2 in gest_r:
+                        g2 = gdb.str_to_gesture(g2)
+                        g2.normalize()
+                        s += g2.get_score(gesture),
+                    log.debug(s)
+
+        if up is 3      and down == left == right == 0:
+            self.three_swipe_up()
+        elif down is 3  and up == left == right == 0:
+            self.three_swipe_down()
+        elif left is 3  and up == down == right == 0:
+            self.three_swipe_left()
+        elif right is 3 and up == down == left == 0:
+            self.three_swipe_right()
+        elif up is 2    and down == left == right == 0:
+            self.two_swipe_up()
+        elif down is 2  and up == left == right == 0:
+            self.two_swipe_down()
+        elif left is 2  and up == down == right == 0:
+            self.two_swipe_left()
+        elif right is 2 and up == down == left == 0:
+            self.two_swipe_right()
+        else:
+            log.warn("Gesture:\tNot found")
+
+
+###
+
 def make_gesture(name, point_list):
     """
     A simple helper function
@@ -71,10 +153,11 @@ def make_gesture(name, point_list):
     return g
 
 class Listener(EventDispatcher):
-    def __init__(self, *args, **kwarg):
+    def __init__(self, actions, *args, **kwarg):
         super(EventDispatcher, self).__init__(*args, **kwarg)
         self._gdb = GestureDatabase()
-        for gest_n, gest_r in gestures.iteritems():
+        self._action = actions()
+        for gest_n, gest_r in GESTURES.iteritems():
             for g in gest_r:
                 g = self._gdb.str_to_gesture(g)
                 g.normalize()
@@ -101,63 +184,14 @@ class Listener(EventDispatcher):
         if len(self._multitouches) is 0:
             return True
 
-        down = up = left = right = 0
+        # down = up = left = right = 0
 
-        print "multitouches: ", len(self._multitouches)
-        for touch in self._multitouches:
-            g = make_gesture(
-                    '',
-                    zip(touch.ud['line'].points[::2], touch.ud['line'].points[1::2])
-                    )
+        log.debug("multitouches: \t%d" % len(self._multitouches))
 
-            # print the gesture representation, you can use that to add
-            # gestures to my_gestures.py
-            #print "gesture representation:", self._gdb.gesture_to_str(g)
-            g2 = self._gdb.find(g, minscore=0.70)
-            if g2:
-                if   g2[1].name == 'move_down':
-                    down += 1
-                elif g2[1].name == 'move_up':
-                    up += 1
-                elif g2[1].name == 'move_left':
-                    left += 1
-                elif g2[1].name == 'move_right':
-                    right += 1
-                else:
-                    print "Unknown gesture"
-            else:
-                print self._gdb.gesture_to_str(g)
-                for gest_n, gest_r in gestures.iteritems():
-                    for g2 in gest_r:
-                        g2 = self._gdb.str_to_gesture(g2)
-                        g2.normalize()
-                        g2.name = gest_n
-                        print g2.get_score(g)
+        gestures = map(lambda g: self._gdb.find(make_gesture('',zip(touch.ud['line'].points[::2],
+                                            touch.ud['line'].points[1::2])), minscore=0.70), self._multitouches)
 
-        if up is 3 and down == left == right == 0:
-            print "up 3 touches"
-        elif down is 3 and up == left == right == 0:
-            print "down 3 touches"
-        elif left is 3 and up == down == right == 0:
-            print "left 3 touches"
-            while gtk.events_pending():
-                gtk.main_iteration()
-            screen.get_workspace_neighbor(screen.get_active_workspace(), wnck.MOTION_LEFT).activate(0)
-        elif right is 3 and up == down == left == 0:
-            print "right 3 touches"
-            while gtk.events_pending():
-                gtk.main_iteration()
-            screen.get_workspace_neighbor(screen.get_active_workspace(), wnck.MOTION_RIGHT).activate(0)
-        elif up is 2 and down == left == right == 0:
-            print "up 2 touches"
-        elif down is 2 and up == left == right == 0:
-            print "down 2 touches"
-        elif left is 2 and up == down == right == 0:
-            print "left 2 touches"
-        elif right is 2 and up == down == left == 0:
-            print "right 2 touches"
-        else:
-            print "Not found"
+        self._action.dispatch(gestures, self._gdb)
 
         self._multitouches = []
 
@@ -169,14 +203,17 @@ class Listener(EventDispatcher):
         elif etype == "end":
             self.on_touch_up(me)
         else:
-            print "Receive unknown event of type '%r': %s" % (etype, me)
+            log.error("Receive unknown event of type '%r': %s" % (etype, me))
 
     def dispatch(self, ev_type, ev_action, ev):
         if ev_type == "on_motion":
             self.on_motion(ev_action, ev)
         else:
-            print "asking to dispatch unknown event: '%r': '%r'" % (ev_type, ev)
+            log.error("asking to dispatch unknown event: '%r': '%r'" % (ev_type, ev))
 
-EventLoop.add_event_listener(Listener())
-runTouchApp()
+###
+
+if __name__ == "__main__":
+    EventLoop.add_event_listener(Listener(Actions))
+    runTouchApp()
 
