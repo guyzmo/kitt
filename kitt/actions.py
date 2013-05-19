@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import logging
-log = logging.getLogger("KiTT")
+from kivy.logger import Logger
+log = Logger.getChild("KiTT")
 
 import gtk
 import sys

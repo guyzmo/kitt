@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import logging
-log = logging.getLogger("KiTT")
+from kivy.logger import Logger, logging
+log = Logger.getChild("KiTT")
+Logger.setLevel(logging.ERROR)
 
 import os.path
 import sys
@@ -28,9 +29,9 @@ def run():
     args = parser.parse_args(sys.argv[1:])
 
     if args.verbose: level = logging.DEBUG
-    else:            level = logging.ERROR
 
-    logging.basicConfig(stream=sys.stdout, level=level)
+    # logging.basicConfig(stream=sys.stdout, level=level)
+    Logger.setLevel(level)
 
     plugin = imp.load_source("kitt.plugin_%s" % args.plugin,
                              "%s/plugin_%s.py" % (os.path.dirname(__file__), args.plugin))
