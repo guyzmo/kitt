@@ -32,7 +32,7 @@ def run():
 
     logging.basicConfig(stream=sys.stdout, level=level)
 
-    plugin = imp.load_source("plugin_%s" % args.plugin,
+    plugin = imp.load_source("kitt.plugin_%s" % args.plugin,
                              "%s/plugin_%s.py" % (os.path.dirname(__file__), args.plugin))
 
     EventLoop.add_event_listener(Listener(plugin.Actions))

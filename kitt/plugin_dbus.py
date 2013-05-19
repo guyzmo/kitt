@@ -6,7 +6,7 @@ log = logging.getLogger("KiTT")
 import gtk
 import sys, dbus, subprocess, os
 
-from actions import Actions
+from kitt.actions import Actions
 
 def DBusInterface():
     def dbus_message(self, plugin, action):
