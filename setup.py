@@ -15,9 +15,9 @@ def read(*names):
 
 long_description = """
 
-%(README)s
+%(README.md)s
 
-""" % read('README')
+""" % read('README.md')
 
 setup(name='KiTT',
       version='1.0',
