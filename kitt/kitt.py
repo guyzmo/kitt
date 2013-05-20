@@ -24,7 +24,7 @@ def run():
     parser.add_argument("-p", "--plugin",
                         dest="plugin",
                         action="store",
-                        default="wmck",
+                        default="xlib",
                         help="Select the gesture plugin")
     args = parser.parse_args(sys.argv[1:])
 

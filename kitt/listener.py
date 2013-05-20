@@ -50,8 +50,6 @@ class Listener(EventDispatcher):
         if len(self._multitouches) is 0:
             return True
 
-        # down = up = left = right = 0
-
         log.debug("multitouches: \t%d" % len(self._multitouches))
 
         gestures = map(lambda g: self._gdb.find(make_gesture('',zip(touch.ud['line'].points[::2],

@@ -33,6 +33,7 @@ setup(name='KiTT',
       zip_safe=False,
       install_requires=[
           'kivy',
+          'Python_Xlib',
           'argparse',
           'setuptools',
       ],
