@@ -3,103 +3,215 @@
 from kivy.logger import Logger
 log = Logger.getChild("KiTT")
 
-import gtk
-import sys, dbus, subprocess, os
+from Xlib import X, XK, protocol, display, Xcursorfont
+from Xlib.ext import xtest
+from Xlib.protocol import request
 
-from actions import Actions
+import os
 
-import xlib_tools as XT
+disp = display.Display()
 
-class Actions(Actions):
+def grab_mouse():
+    log.debug("grab_mouse")
 
-    GESTURES = dict(
-        move_down = [
-            "eNq1l01uGzkQhfd9EWszBuufdYFkG8AHGDi2YAvJ2IKkzExuP1UlqdWLREIm4KIgqfX4kc1HsoqrzZfN39/vX9b7w7fdevp4+ty2afW8henh7u3xr/XdtMX4Gh807R/u9ofd+5f1Pn7ytPq6lWn1Q8hDyaatJsqi/fZ983bIZj2b+U+afUrVtIXjCHII36MJ4PSh3TOaNGWVzgJIUsP5N/+m/LsJAQl37uLuhNP+8+P1Trg6kenlyKfuoNabqXeQrtP+5f+S663BZnI0F2FhoGCRym+ge6F9ABpr0hHOaOTWjBpqAxGw3yFjkWkAuTzE2UMQ6gAtFkgwWNUuaPYuAIZELbrVfptdLqINYZeN6CPYVD7S7GNTDSY0ULRuwLxgsyNbi70k0U8M5ya7nCQawi4vSYawy0s6eflHIGKLsxgYYcy34GLCURB6xx4bK9xguA0vM8mHwLncZBgDLzuZxsDLT5YZjhyntrTurcVKVz2fsNlvHLjhpXVUFwrdbXo5yjaIXpayj6FLeSowiF6mCg2il6syyFUpV+XiKjcCZdamhhxpYQE3UO3kgOYQJyTfhpep4kPgWp4qjIGXpUpj4OWoyhh4GaoXQwUyoQmrEzN2u8AhqIjo5o26ut3OdFqGqg+BWxlqMAZehhqNgZehdjFUwkePZMlxuHdTWcJN85FGzRtb1SXhWeU/7dbrt7lmN82i3WxaVR0eMI2xmEYesCiU46FxZuI5psM2Bvr4K3K/JqeYn36J0Pd2TY/uuIjUwzV9FFa4iNTjFb265gaZI/U061ukSWjEZhJHY+mNaRGcej7rMXKuZ9JVa96O+kixcIkav5z0YIbaoyByFNJWyVmjau46R41HT/rYs8jawYl6dJbyWA9tETWddpSTo7WoMqPkwgbxNOVxtcB+iZSfzKXFmxLmWZH6KNkWYan3s751AgTsnu9dk8kxt76I5PvJXTL3To2ULa9k8FN9uHtcua/rzcvrIdasH68a0jGS0znqzvjP5vnwmoq5mIybkzR0jR5iqYfk8P51vXt8e8rbr3NV6Pn4tN/+3O7en789VS/xxnTPWRTF5SUvp3kv/Xz/H5Ij87w="
-        ],
-        move_up = [
-            "eNq1l9tuIzcMhu/nRZKbBuJZfIH0tkAeoEgTIwl2mxixt+2+fX/R9ngCtPG2wFwQ4wP1i9Inccjrly8vf3y/edrs9t/eN9PPx+e2TdePW5rurl7vf99cTVvGRzxk2t1d7fbvb182O3zV6frr1qbrfxS5K7dp60MqMH779vK6H8P6GJb/MuyX4TVt6RDBCOE7hhBPtz+1G4nWpGUPclYnr3j+Gv/LdNtuGpM1ikhSTs/EqN1v95/PozWPTU+nKRb67C4+7Z6O6pRNVYXTjPEl5LJ6LZ5iVucuGcbUeKyE2M7qTQU/mXXuluLxA7H3Us9ZnXqSqaaQdLPA2g7q+AvK2BnqQmGeyqoX5bkQMK0lzyUva8kXWD6DpYGzqSeLUoDuQt5ENTjSgAchmF2WL7Ica8kXWs6V5KXQyhEtJDR7TxEyZ5fovlQ3HHtni6BgtvYD6kVWZCX1Aiu2knpxlVhJvbBKrqOuRVVnqoSj0Lw7IWkRfTwySHKJiSWdumu7fJ+0oKqsI15M1dYRL6Q6IxVRMdKOPB7N23iJzOrk1qN1Dw8VZfPL6oVUcx11K6RGK6kXU5OV1Auq2UrqRdVWompF1c5UO147yMEqSYIUvHw3NQ9c0oaSANUCtx9Iv15UnVZSL6o+U9VjeumC6kL9g7g0lDqdQzSokV7eGC+oPkO1036rSxNfVkucjRC9douO0ulyteSF1GMV7QLquYZ2FM6YcWKXGcVKGztLS+UPx7DJ5dQVhTJmlM6JuhYhdgmTrmdtZenJTIFH9nYZZBTIsP8nPdqAh/fN5nUu6sNHVR8xXY8D7XDUJJRqgkKsDiGO9cJk2m+jT/f/wTuP3rgMQNTCcZ47NA7+450wW8C/t8/81ZY23Okz9+hLK38+Bd/TBtDW+FB8jQEo1CjPNvzl5B/eUa9hm0ezgjpy+BsWvrCaQE8DpC/HlL8LLc2Hvx39raH5wbszUBTW4sYAFIehs1VAfvRH1kFiQM2djLbkAN2YOWK2sf89Zv/WA7kIBbmMqYc7QkPfMttwP8FdrBViXuE4ocb32XT4n/Ca45pQ12zYCpAc7uG2sEE3T3S9oSTo2awbozKucJBNgxY2/E94fWRYQgeHFq9XMCPz8cKG9wzXO/YfzR7maBZ1OME60aUcbcSeM9tOrZ8XcHBHXAsbaPOEFokdJQ4aH/Sqhvam/FEGNp6tggfaw6V73rw8Pe9x3bIWCrpkORuPdvjPl8f98/CorWu4Deg1bST5Dr40XPZvXzfv968Po7PPOuH18zFR/Lp9f3v89lCz5HQrNzjhvU4mgb2MvvTmb/HSIV4=",
-        ],
-        move_left = [
-            "eNq1mNtuGzcQhu/3ReybGnOe4QsktwX8AIVjC7aR1BYspW3evkNKu1KbrNZMsAY4slb//Hv4uOSQ18+fn//6dvO42e2/vm2Gj8fPLQzXD1scbq9e7v7cXA1byn/zg4fd7dVu//b6ebPLrzJcf9nqcP1Dk9smG7ZWrTzzt6/PL/uaFjWtzKT9XlXDFg9XUC/hW6YgDR/gBkKAgB1RCkKo1Mv5p/7M9WcRRvUxGg67T3eXTyLtJDo8Vv/f8gQFSbkgAxsYeQy7x4M3OkX4GLXQsnm7cfR1zKOZl1XMqT17wnXMqZnzOuYNKJ2AIhlDuJVwhhLiJ3OMYB5jcVs2b0DJ32EOJu5ljJ79bNG8AaUzoGpYyjGS48kbwUmnWFwXzbkB5TOglK+QpDNXe5Rfc29E+Ui0WiRNsHwHXUGEqsUvuDekrJO7RDFVzLec0iZ0dK+3JcxUjpEDYhkqN6js77HHetiPUSx82b1R5bKOuzSsgpM7Z27etUZhNcqDkzmB5pA5xnzVls0bVTl7T/P9RHOHIiyRvVpO9oys2ZmOMQenRfdGVXSxR/6UeWMq/h5zYlKMMSIujzHSmEpZ7O6VqYeYTHG5t2tDqvguc8p7gjESLw8y2pgqv8cdHLITHaMVX34w2piqrjMOaIOq/g53QcvZZIzL/UUbUS0rWFvjabiGdYNpvIZ1I2m6hnXDaGtgtIbRyvKIBTcWJgBjjOXO7Q2k4zrmDaXzOuYNpuvPmteK//5ts3mZ6veslbKAdx+uM4WzfvLER6jCFthsNEujszbst1nW3TW5Z6UnYQAKkbVRk0vkrHdqVV4uyb2cWqQ6oEuNXWoa1UFhFpw1HxbFGTV3qaVLraPac5rXHDuTYCk6d+F2Uf7dI8+Co08fnfoJqWlWZwweESCgB32tlqeGqS/QqcfLesOzVvXUqedL+pzGzlrt8UU69dqpt069d+qjU18u67O0PbXUI0BvAvYmUG8C9yZIb4L2JlhvgvcmRG9CL2nsJY29pLGXNPaSxl7S2Esae0ljL2nsJY29pKmXNPWSpon0WdFRV/pz+gm0gGgAKlndTfLZhAk0122hXBiCARGMZ5CsjcamLWECnWuwIllRhHLWPXMDZdZEY0KeE8mJTIzr4HOYeSLKqbUE702Iywn/n9uQSmcCT6CxkLKBuJRkN6vHSw/pRwkTZ3LnPENkaZGVxqx+4sxG6Pkdja3EHASWy/3i+4QJs4jVR+3suXDhWf1EWRmzzDZUd4P5C+qcn5FHyEFZM+aV5GOt2+M2mzBCjv9C87luJAn5sAJ42jw/Pu3rTru06hTqBZ4aUd2cvb36+/lh/9RUx8WdWqm7pGN9G1W0f/2yebt7ud804WEzth4/Ll/+2L69Pny9P5xMhg98k48t/yK7JBBz3TP7dPMv3yrjgA==",
-            "eNq1l91uG0cMhe/3RaybCCSHvy+Q3BbwAwSuLdiCU3shKU3y9uVQa8soIsstMAIGklZnDmfn42jJ1fZx+/ev9f1mf/i+20xflvcZptXdjNP11dPNX5uraab8mG9t2l9f7Q+758fNPr/ytPo2y7T6rcl1yaZZu5Xl/Pl5+3To07xPizPT/uiqacbjCvoSfuUUpOnzJ1hD8xamyo3IGqH19fzsv7fpM6zJsQkAsrCJAefPf968H4YrjEz3PUIGAMq5pEIAZgDu0/5+Mc+Xq5tDZBQPvmxet56LHGLuZR4ncyRSVgQiCeIQeXXHCPemGNxEhIkuulNtP+EHlg6CBMbsTRSJWS6bU5m3MeZFlGSMeRElG2NeRCkumveDkIYoohIAHCyX3VsRbTjIvZC2Nsi9mLY3TFUg1MyaNMiDoyd3yUsCEsoCLXJPL5oX02ZjzItpiyHmXEgZx5gXUW5jzAsojwHKBZTHAOUCymOASgGVMUClgMoYoFJAZQxQKaAyBqgUUBkDVAuojgGqBVTHANUCqmOAagFV+8jTwtCVs34RFmKKyw8LLaAaQ8ytgBqOMS+g1saYF1CT/2veC//b3Wbz9FrGm/Y63mxapV0mgBFEzhKTOIZQzaw5DZwOs/l0U/LmWYa2QE85ZLKV3KVfWIZ2ebwnD2R8HZRyh/8mxxe55kZk6gIqomRBcEZPL/rcmGbGzeuubVm9vxnR9e1F37IdYULhpp49zVHe8DTKnt+VA+Pr6Gp5UVNA1vtZblIS0zNqXdRAFh5O6J5gs/H5/ca7HfXk/ahn79AAQ8DPyResGU8VxUzBkWlxD8Y3o8sXrCnhSG9XU2e2c/YB7+v/vZORYI8p+7DZ3j8cMlljSfrIRD2NPHEp+rG9Ozx0zbEVA+/NJSJ51u+ZPKk4PH/b7G6ebnsrHJVO2C8vJ+3rvHu++35bYfKWbc2Q/4Tiebw4+65+fNb/AAOH9no=",
-            "eNq1l0tuGzEMhvdzkXhTQ3yLF0i3BXKAwkmMxEiaDGynbW5fih4/CsQxWkAL+TW/flL6NGNytnpa/XyfPyw327f1cvg6vY9lmN2PMNxcvSx+LK+GEeNjvNGwubnabNevT8tNfOVh9jzKMPvQ5CZlw6jNymL++Lp62bZptU3zM9O+NdUwwi6DlsJ7TAEcrr+UeQFQFSdmIeVaBFtCv5uAhusyh1pd1UlKvFTBuHy7+DwOZxwZHj4J8TC5CxEhOIAzFCtw2T0XD3Z0L+EPUBjIVJgt3Cb/vIqiXoFQC5JS8csRakbwfhEwSSB0jIAZgTpGSMooHSMkaZxINwvGOCpiSKUyVqYT++qMLgVYFDFCX3ZPyuh93CkJExzcGcwEREysIno9mgsVLh7ODmhuctk72RJ18U6qJF28kydZF++kSd7Dm5Mld2HJyZK7sORkyV1YcrLkLiw5WXIXlpIspQtLSZbShaUkS+nCUpKldGEpyVK6sNRkqUeWqoQOUUSYx/9L5aN3jf8loqIcFxTigF30TpZKXbyTpUoX72Sp1sU7War38LZkaV1YWrK0LiwtWdr/smyl/916uXw5FPKmrZI3G2bhFgUTG2FFZjSu0CLE/UHlOHjYjlaHxb/IfS83RYESBRlGTa5n5LXs5eJYTQhqrBLOymEvB61WLap6g8rnkqm4l8ejQTS2h2NzSp3kheAwmpomda1Rj4EKOXPBM2Leiy1MPfoYIytx332sloM69sNLMSWSOiUS6z4ZTa6TXDHqXnUliZpx19SIgZST0eQ2yVk4SkiJNXo85Xa7EiUn4XE0+UR0ryvSytNpE805Vr8f6T4RlRLNlamJR8tWbJdMZHUyMOQeRHeH73G5enjcxrHbZVJA+GRIdHIh+rW63z42Te4z/A2qPadvrravz8v14uWu9bW+a+zaz9M9831cv96/3WUcHq59rtEakMdBolhTpLm5nf8BtwTrJw==",
-            "eNq1l1FuGjEQht99kfBS5PHMeGYuQF8r5QAVSVYEJYUVkLa5fcfDhhCpJE0lI1kL69+fl/0MO56tH9Y/n+erYX942g3p63Qcc5rdjZCurzbLH8NVGou/9QOm/fXV/rDbPgx7/0hp9jhymv0Vch2xNNaGEh8/btebQxumbZhdGPatpdIIxytol/DsQ6CkxZc8z1BKqZaBCoIQmrQL+t0CmBZ5DvXNK3v3zfL9eSjm4bR6Z4rVkZ6REFAKk3cb/ws9vjxIJ7oG3frQSxgo0Ilego5HuhNyVZJcSayaCFSe4D4xQC5GAOK9mU3qx/SwWrgTPawW6UQPq8X60DGsIpzoTIxg6gYFmavfuRPdO7QWIc6t3/hjeEhF7AMPp8h94KEUpQ88jKJ1gVMIpT5CKYRSH6EUQqmPUAqh1EcohVDqI5RDKPcRyiGU+wjlEMp9hHII5T5COYTyq1Ajf9JRNpNSBbK+shXfvOxDdg2fFbqwQ2fFLuywWbkLO2RW6cIOl7WLSwmX0sWlhEvp4lLCpfyvy1b03+6GYXMq4b3S8BpeJM2cZpXUqxRR9lIE3a2fI/Bi8Lylwyialp/K23t58FLotXlc8+ficIqjVLaMmEVVL8XLSxy5KAEa5GyIl+L4Ei+FK5AVscyXwvQSBsWSK3jJJ7lcZPPn4nWKE6iZAYMWZL+5F267ypQHx6qvDi86lfJ0H1nPmrX4ZFV9R+B/xKhsJReJdUbF19hZqy0/WRUD8dWnPoMV9tKr5TFb1bPmeXOtxzV4P6xX9wdffQaxiNu4s6ZtL/hrfXe4b5GYHwT9UkxNC6h6qdwih+3jsFtubtu+1o7bxnZ6+uV8H3fbu6fbmIbSAtp3RvPHCfjTxN37Fvhm/gdGlOtB",
-        ],
-        move_right = [
-            "eNq1l01uIzcQhfd9EXsTo35ZrAs42wA+QODYgi3MxBYkTZK5fR5LrR8g0SgI0AtClvX4is2Pxaq+X39Z//H94W2123/brqaf588NTfevG56e7j6ef1/dTRvBn/jQafd0t9tvP7+sdvhq0/3XjU/3/2ryVLJp04ZVYP7mc/2xH9P6mJZXpv0yVNOGDysYS/iOKSzTIz0QNxUyb9qdkzjbWM9f43edHn+iB1OjTtqpcXey7tPut+cfx7GK49PbMUSYxwiSzKI9EOJtdh/fJHt27y5Ecdu8np3jP5lz15RTCLtt3ss8FzGX2n7hs/k/d/5oLu4yTD0zw1Jvb7pIuetC7oVULpByhFpTb2zucfbmzi1I2CgjqY+wt7yLqMQi3gVUcglvLZ565knsJiEZyBdsMI19PdoTaSAmaWvd8Ml5+8BoIVVdLkBRVV8uQKHVWC5A8dVcLIAVZJshl4kFJZLKxLwLk8wB8FO6RHYEF1WiJrfdi7DpQu6F13wh92JrcXZnS0OCpQScLLOf3JW8CS4kZw9Wup1bVlwtFzH3Yuq8jHkhdV3GvIi6L2NeQH0ZoF5AfRmgrYC2S6CtmYux99Y7auDZO5ADuOedm/e0drv0tQLadBnzAtougIqRGpOluCFP0Usd3R0XF2r1uLaoud5ulVoBbbGMeQFtuYh5FNDgZcwLaFwAldbDM9yMBETlwryh88vGuDRxXm/zjOIZ/j+9x5vAy3a1+jj19eg40dhHTPeP1XImm2IjOjshY4ZL4qHtPKb9Jvr0XHIx1ELrlNwISXVNnrNcUR4De+umreM1oeQopHYaUHea1caaTCgnkrXzV+Q8y7GO1ESuW2DmNXM5qI3AuMOZEpWK5drSu856HA3nGM04khN7XPKxU6dhQ24HOUodGyOJrYngrik5loeG/jhK7rM8nJo2VlFG5zzLcT+dR8nbQd4C7YVF1wAklgMlIKaLMeRxkOPZRULxftEp0Jke5ORdT6MN+Qw1AieqB+5N14brpuS4dOg8hnpm2mlUddR17qjtflg6miCV84A86YdyvRhj6Qmoh9P6vlq/ve9xTvPQfgkH9vY4Gso4RH+uX/fvQ1PPZl072i8cS2qBVmQo9p9fV9vnj5fxWpxFj8e/5xz7dbP9fP32UmFwEhQvjdlbJsjhFOZoVR7+BgO2+GU="
-        ]
-    )
+    cursor_font = disp.open_font('cursor')
+    cursor = 0
+    mycursor = cursor_font.create_glyph_cursor(cursor_font, cursor, cursor+1, (0,0,0), (0xFFFF, 0xFFFF, 0xFFFF))
+       # grab_pointer(owner_events, event_mask, pointer_mode, keyboard_mode, confine_to, cursor, time)
+    disp.screen().root.grab_pointer(False,                                        # owner_events
+                                    X.Button4MotionMask | X.Button5MotionMask,                # event_mask
+                                    X.GrabModeAsync,                              # pointer_mode
+                                    X.GrabModeAsync,                              # keyboard_mode
+                                    0,                                            # confine_to
+                                    mycursor,                                     # cursor
+                                    X.CurrentTime)                                # time
+    disp.sync()
 
-    def three_swipe_up(self):
-        pass
 
-    def three_swipe_down(self):
-        pass
+def ungrab_mouse():
+    log.debug("ungrab_mouse")
 
-    def three_swipe_left(self):
-        XT.switch_workspace(-1)
+    disp.ungrab_pointer(X.CurrentTime)
+    disp.sync()
 
-    def three_swipe_right(self):
-        XT.switch_workspace(+1)
 
-    def two_swipe_up(self):
-        pass
+def do_mouse_click(buttontype):
+    """
+    executes mouse button click
 
-    def two_swipe_down(self):
-        pass
+    buttontype: X.Button1, X.Button2 or X.Button3 depending on which button to be triggered
+    """
+    log.debug("do_mouse_click")
+    root = disp.screen().root
+    pointer_info = request.QueryPointer(display = disp.display,
+                                        window = root)
+    root_xpos, root_ypos = (pointer_info._data['root_x'], pointer_info._data['root_y'])
+    targetwindow = disp.get_input_focus().focus
 
-    def two_swipe_left(self):
-        XT.do_key_press(XT.XK.XK_Control_L, XT.XK.XK_Page_Up)
-
-    def two_swipe_right(self):
-        XT.do_key_press(XT.XK.XK_Control_L, XT.XK.XK_Page_Down)
-
-    def dispatch(self, gestures, gdb):
-        down = up = left = right = 0
-        for gesture in gestures:
-            if gesture is None:
-                log.warning("Undefined touch")
-                continue
-            gesture = gesture[1]
-            if gesture:
-                if   gesture.name == 'move_down':
-                    down += 1
-                elif gesture.name == 'move_up':
-                    up += 1
-                elif gesture.name == 'move_left':
-                    left += 1
-                elif gesture.name == 'move_right':
-                    right += 1
-                else:
-                    log.warn("Unknown gesture")
-            else:
-                log.info("gesture: \t%s" % gdb.gesture_to_str(gesture))
-                for gest_n, gest_r in GESTURES.iteritems():
-                    s = gest_n, "\t",
-                    for g2 in gest_r:
-                        g2 = gdb.str_to_gesture(g2)
-                        g2.normalize()
-                        s += g2.get_score(gesture),
-                    log.debug(s)
-
-        if up is 3      and down == left == right == 0:
-            self.three_swipe_up()
-        elif down is 3  and up == left == right == 0:
-            self.three_swipe_down()
-        elif left is 3  and up == down == right == 0:
-            self.three_swipe_left()
-        elif right is 3 and up == down == left == 0:
-            self.three_swipe_right()
-        elif up is 2    and down == left == right == 0:
-            self.two_swipe_up()
-        elif down is 2  and up == left == right == 0:
-            self.two_swipe_down()
-        elif left is 2  and up == down == right == 0:
-            self.two_swipe_left()
-        elif right is 2 and up == down == left == 0:
-            self.two_swipe_right()
+    if isinstance(buttontype, basestring):
+        if buttontype is "Button1":
+            buttontype = X.Button1
+        elif buttontype is "Button2":
+            buttontype = X.Button2
+        elif buttontype is "Button3":
+            buttontype = X.Button3
         else:
-            log.warn("Gesture:\tNot found")
+            return False
+    elif not buttontype in (X.Button1, X.Button2, X.Button3):
+        return False
+
+    if targetwindow.get_wm_name() is None and targetwindow.get_wm_class() is None:
+        targetwindow = targetwindow.query_tree().parent
+    ret = targetwindow.translate_coords(root, root_xpos, root_ypos)
+    target_xpos = ret.x
+    target_ypos = ret.y
+
+    myevent_press = protocol.event.ButtonPress(detail = buttontype,
+                                            root=root,
+                                            root_x=root_xpos,
+                                            root_y=root_ypos,
+                                            window=targetwindow.id,
+                                            event_x=target_xpos,
+                                            event_y=target_ypos,
+                                            same_screen=1,
+                                            state=0,
+                                            time=X.CurrentTime,
+                                            child=0)
+    myevent_release = protocol.event.ButtonRelease(detail = buttontype,
+                                                root=root,
+                                                root_x=root_xpos,
+                                                root_y=root_ypos,
+                                                window=targetwindow.id,
+                                                event_x=target_xpos,
+                                                event_y=target_ypos,
+                                                same_screen=1,
+                                                state=0,
+                                                time=X.CurrentTime,
+                                                child=0)
+
+    # use window instead of display (xobject/drawable.py:send_event)
+    disp.send_event(X.InputFocus,
+                myevent_press,
+                event_mask=0,
+                propagate=1)
+
+    # use window instead of display (xobject/drawable.py:send_event)
+    disp.send_event(X.InputFocus,
+                myevent_release,
+                event_mask=0,
+                propagate=1)
+    disp.sync()
+    return True
 
 
+def do_key_press(*keys):
+    """
+    executes a keypress
 
+    keys: argument tuple containing one or several modifier keys, and the key to press
+
+    the key to pass as a parameter has to be taken from Xlib.XK library
+    """
+    log.debug("do_key_press")
+    root = disp.screen().root
+
+    keys = map(lambda k: XK.string_to_keysym(k) if isinstance(k, basestring) else k,
+               keys)
+    for key in keys:
+        if not key in XK.__dict__.values():
+            return False
+
+    pointer_info = request.QueryPointer(display = disp.display,
+                                        window = root)
+    root_xpos, root_ypos = (pointer_info._data['root_x'], pointer_info._data['root_y'])
+    targetwindow = disp.get_input_focus().focus
+    if targetwindow.get_wm_name() is None and targetwindow.get_wm_class() is None:
+        targetwindow = targetwindow.query_tree().parent
+    ret = targetwindow.translate_coords(root, root_xpos, root_ypos)
+    target_xpos = ret.x
+    target_ypos = ret.y
+
+    def send_key(display, window, keycodes):
+        '''Send a KeyPress and KeyRelease event'''
+        if not type(keycodes) in (tuple, list):
+            keycodes = (keycodes,)
+        # send with modifier
+        for keycode in keycodes:
+            xtest.fake_input(window,
+                             X.KeyPress,
+                             display.keysym_to_keycode(keycode))
+        for keycode in reversed(keycodes):
+            xtest.fake_input(window,
+                             X.KeyRelease,
+                             display.keysym_to_keycode(keycode))
+        display.sync()
+
+    send_key(disp, root, keys)
+    return True
+
+
+def switch_workspace(direction):
+    """
+    switches workspace
+
+    direction: +1 for next workspace, -1 for previous workspace.
+    """
+    log.debug("switch_workspace")
+    screen = disp.screen()
+    root   = screen.root
+
+    if isinstance(direction, basestring):
+        direction = int(direction)
+
+    def get_property(disp, name):
+        atom = disp.intern_atom(name)
+        return disp.screen().root.get_full_property(atom, 0)
+
+    def send_event(win, ctype, data, mask=None):
+        """ Send a ClientMessage event to the root """
+        data = (data+[0]*(5-len(data)))[:5]
+        ev = protocol.event.ClientMessage(window=win, client_type=ctype, data=(32,(data)))
+
+        if not mask:
+            mask = (X.SubstructureRedirectMask|X.SubstructureNotifyMask)
+        root.send_event(ev, event_mask=mask)
+        disp.sync()
+
+    cur_ws = get_property(disp, '_NET_CURRENT_DESKTOP').value[0]
+    nb_ws = get_property(disp, '_NET_NUMBER_OF_DESKTOPS').value[0]
+
+    # switch to previous desktop
+    if cur_ws + direction < 0:
+        cur_ws = nb_ws -1
+    elif cur_ws + direction >= nb_ws:
+        cur_ws = 0
+    else:
+        cur_ws = cur_ws + direction
+    send_event(root,
+               display.Display().intern_atom("_NET_CURRENT_DESKTOP"),
+               [cur_ws, X.CurrentTime])
+    return True
+
+
+ACTIONS = dict(
+    workspace  = switch_workspace,
+    keypress   = do_key_press,
+    mouseclick = do_mouse_click
+)
+
+if __name__ == "__main__":
+    import time
+    print "grab_mouse_wheel"
+    grab_mouse_wheel()
+    time.sleep(1)
+    print "do_mouse_click"
+    do_mouse_click(X.Button3)
+    time.sleep(1)
+    print "do_key_press"
+    do_key_press((XK.XK_Alt_L, XK.XK_Tab))
+    time.sleep(1)
+    print "ungrab_mouse_wheel"
+    ungrab_mouse_wheel()
+    # time.sleep(1)
+    # print "switch_workspace"
+    # switch_workspace(+1)

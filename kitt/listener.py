@@ -7,6 +7,7 @@ from kivy.event import EventDispatcher
 from kivy.graphics import Line
 from kivy.gesture import Gesture, GestureDatabase
 
+from actions import Actions
 
 def make_gesture(name, point_list):
     """
@@ -19,11 +20,11 @@ def make_gesture(name, point_list):
     return g
 
 class Listener(EventDispatcher):
-    def __init__(self, actions, *args, **kwarg):
+    def __init__(self, config, *args, **kwarg):
         super(EventDispatcher, self).__init__(*args, **kwarg)
         self._gdb = GestureDatabase()
-        self._action = actions()
-        for gest_n, gest_r in actions.GESTURES.iteritems():
+        self._actions = Actions(config)
+        for gest_n, gest_r in self._actions.get_gestures().iteritems():
             for g in gest_r:
                 g = self._gdb.str_to_gesture(g)
                 g.normalize()
@@ -51,11 +52,13 @@ class Listener(EventDispatcher):
             return True
 
         log.debug("multitouches: \t%d" % len(self._multitouches))
-
         gestures = map(lambda g: self._gdb.find(make_gesture('',zip(touch.ud['line'].points[::2],
                                             touch.ud['line'].points[1::2])), minscore=0.70), self._multitouches)
 
-        self._action.dispatch(gestures, self._gdb)
+        if not self._actions.dispatch(gestures, self._gdb):
+            for touch in self._multitouches:
+                log.debug("Touch:\t%s" % self._gdb.gesture_to_str(make_gesture('',zip(touch.ud['line'].points[::2],
+                                                                                      touch.ud['line'].points[1::2]))))
 
         self._multitouches = []
 

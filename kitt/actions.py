@@ -5,51 +5,110 @@ log = Logger.getChild("KiTT")
 
 import gtk
 import sys
-
-import wnck
+import imp
+import json
+import os.path
 
 class Actions():
+    def __init__(self, config):
+        self._actions = dict(pinch_in=[],
+                             pinch_out=[],
+                             two_swipe_up=[],
+                             two_swipe_down=[],
+                             two_swipe_left=[],
+                             two_swipe_right=[],
+                             three_swipe_up=[],
+                             three_swipe_down=[],
+                             three_swipe_left=[],
+                             three_swipe_right=[],
+                             four_swipe_up=[],
+                             four_swipe_down=[],
+                             four_swipe_left=[],
+                             four_swipe_right=[])
+        self._functions = dict()
+        self._gestures = dict()
+        try:
+            with open(config) as config:
+                config = json.load(config)
+                for engine in config['engines']:
+                    plugin = imp.load_source("kitt.plugin_%s" % engine,
+                                            "%s/plugin_%s.py" % (os.path.dirname(__file__), engine))
+                    self._functions.update(plugin.ACTIONS)
+                self._gestures = config["gestures"]
+                actions = config["actions"]
+                for gesture, act_l in self._actions.iteritems():
+                    if gesture in actions.keys():
+                        for action in actions[gesture]:
+                            act_l.append(action)
+                    else:
+                        log.error("Unable to load gesture: '%s' unknown" % gesture)
+        except IOError:
+            log.debug("No configuration file found")
 
-    GESTURES = dict(
-        move_down = [
-        ],
-        move_up = [
-        ],
-        move_left = [
-        ],
-        move_right = [
-        ]
-    )
-    def __init__(self):
-        screen = wnck.screen_get_default()
-        if not screen:
-            raise Exception("Default screen not found!")
+    def get_gestures(self):
+        return self._gestures
 
-    def three_swipe_up(self):
+    def before(self):
+        # XT.grab_mouse()
         pass
 
-    def three_swipe_down(self):
-        pass
-
-    def three_swipe_left(self):
-        pass
-
-    def three_swipe_right(self):
-        pass
-
-    def two_swipe_up(self):
-        pass
-
-    def two_swipe_down(self):
-        pass
-
-    def two_swipe_left(self):
-        pass
-
-    def two_swipe_right(self):
+    def after(self):
+        # XT.ungrab_mouse()
         pass
 
     def dispatch(self, gestures, gdb):
-        pass
+        d = u = l = r = 0
+        for gesture in gestures:
+            if gesture is None:
+                log.warning("Undefined touch")
+                continue
+            gesture = gesture[1]
+            if gesture:
+                if   gesture.name == 'move_down':  d += 1
+                elif gesture.name == 'move_up':    u += 1
+                elif gesture.name == 'move_left':  l += 1
+                elif gesture.name == 'move_right': r += 1
+                else:
+                    log.warn("Unknown gesture")
+            else:
+                log.info("gesture: \t%s" % gdb.gesture_to_str(gesture))
+                for gest_n, gest_r in self._gestures.iteritems():
+                    s = gest_n, "\t",
+                    for g2 in gest_r:
+                        g2 = gdb.str_to_gesture(g2)
+                        g2.normalize()
+                        s += g2.get_score(gesture),
+                    log.debug(s)
+
+        if   u is 4 and d == l == r == 0: gesture = "four_swipe_up"
+        elif d is 4 and u == l == r == 0: gesture = "four_swipe_down"
+        elif l is 4 and u == d == r == 0: gesture = "four_swipe_left"
+        elif r is 4 and u == d == l == 0: gesture = "four_swipe_right"
+        elif u is 3 and d == l == r == 0: gesture = "three_swipe_up"
+        elif d is 3 and u == l == r == 0: gesture = "three_swipe_down"
+        elif l is 3 and u == d == r == 0: gesture = "three_swipe_left"
+        elif r is 3 and u == d == l == 0: gesture = "three_swipe_right"
+        elif u is 2 and d == l == r == 0: gesture = "two_swipe_up"
+        elif d is 2 and u == l == r == 0: gesture = "two_swipe_down"
+        elif l is 2 and u == d == r == 0: gesture = "two_swipe_left"
+        elif r is 2 and u == d == l == 0: gesture = "two_swipe_right"
+        else:
+            log.warn("Gesture:\tNot found")
+            return False
+
+        for act in self._actions[gesture]:
+            fun = act["function"]
+            prm = act["parameters"]
+
+
+            if fun in self._functions.keys():
+                self._functions[fun](*prm)
+            else:
+                log.error("Action not found: %s" % fun)
+
+        return True
+
+
+
 
 
