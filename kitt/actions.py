@@ -28,7 +28,7 @@ class Actions():
         self._functions = dict()
         self._gestures = dict()
         try:
-            with open(config) as config:
+            with open(os.path.expanduser(config)) as config:
                 config = json.load(config)
                 for engine in config['engines']:
                     plugin = imp.load_source("kitt.plugin_%s" % engine,
