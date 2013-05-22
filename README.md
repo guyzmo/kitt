@@ -69,16 +69,16 @@ Here are the different actions available:
    * `{ "function": "workspace_up", parameters: [] }` switch to previous workspace
    * `{ "function": "workspace_down", parameters: [] }` switch to next workspace
  * `dbus` engine:
-   * still has to be implemented, but I expect to code a `send_message` function that will take a full dbus message as parameter.
+   * `{ "function": "send_dbus", parameters: [ "service", "object", "param1", "param2"...] ` call method on service `service`, object path `object` with all needed parameters
 
 DEVELOP
 -------
 
 For development, you'll need zc.buildout (`apt-get install python-zc.buildout` or `pip install zc.buildout`)
 
-git clone https://github.com/guyzmo/kitt.git
-cd kitt
-buildout
+    % git clone https://github.com/guyzmo/kitt.git
+    % cd kitt
+    % buildout
 
 EXTEND
 ------
