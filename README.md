@@ -79,14 +79,59 @@ To configure, the file shall match the following format, be careful, every comma
 Here are the different actions available:
 
  * `xlib` engine:
-    * `{ "function": "workspace", parameters: ["N"] }` switch current worskpace, N being the number of workspaces to jump over (can be a positive or negative number)
-    * `{ "function": "keypress", parameters: ["KEY1", "KEY2"] }` executes a key stroke, which can be a combination of several keys (modifier keys, or input keys from the list below)
-    * `{ "function": "mouseclick", parameters: ["Button1"] }` executes a click (can be either `Button1`, `Button2`, `Button3`, `button4`, `Button5`)
+    { 
+      "function": "workspace",
+      "parameters": {
+        "direction": "N"
+      } 
+    } 
+
+switch current worskpace, N being the number of workspaces to jump over (can be a positive or negative number)
+
+    { 
+      "function": "keypress", 
+      "parameters": {
+        "target": ["app1", "app2"],
+        "keys": ["KEY1", "KEY2"]
+      } 
+    } 
+
+executes a key stroke, which can be a combination of several keys (modifier keys, or input keys from the list below)
+the "target" attribute is one of the `wm-class` property of the window. It can be found when triggering the action on
+an unknown window, when in `foreground` mode.
+
+
+    { "function": "mouseclick", 
+      "parameters": {
+        "button": "ButtonN"
+      } 
+    }
+
+executes a click (can be either `Button1`, `Button2`, `Button3`, `button4`, `Button5`)
+
+
  * `wnck` engine:
-   * `{ "function": "workspace_up", parameters: [] }` switch to previous workspace
-   * `{ "function": "workspace_down", parameters: [] }` switch to next workspace
+
+    { "function": "workspace_up", parameters: {} }
+
+switch to previous workspace
+
+    { "function": "workspace_down", parameters: {} }
+
+switch to next workspace
+
  * `dbus` engine:
-   * `{ "function": "send_dbus", parameters: [ "service", "object", "param1", "param2"...] ` call method on service `service`, object path `object` with all needed parameters
+
+    { 
+      "function": "send_dbus",
+      "parameters": { 
+        "service": "service", 
+        "object": "object",
+        "parameters": ["param1", "param2"...]
+      }
+    } 
+
+call method on service `service`, object path `object` with all needed parameters
 
 DEVELOP
 -------
@@ -109,7 +154,6 @@ Please fork the project, and send me back patches!
 TODO
 ----
 
- * implement application selection for xlib plugin ;
  * create a compilation of touches in the gesture file for different input devices, and select them at runtime ;
  * implement pinch\_in/pinch\_out features and other weird gestures ;
  * create a GUI, like BTT's

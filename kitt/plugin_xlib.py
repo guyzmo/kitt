@@ -35,11 +35,11 @@ def ungrab_mouse():
     disp.sync()
 
 
-def do_mouse_click(buttontype):
+def do_mouse_click(button, target=None):
     """
     executes mouse button click
 
-    buttontype: X.Button1, X.Button2 or X.Button3 depending on which button to be triggered
+    button: X.Button1, X.Button2 or X.Button3 depending on which button to be triggered
     """
     log.debug("do_mouse_click")
     root = disp.screen().root
@@ -48,16 +48,16 @@ def do_mouse_click(buttontype):
     root_xpos, root_ypos = (pointer_info._data['root_x'], pointer_info._data['root_y'])
     targetwindow = disp.get_input_focus().focus
 
-    if isinstance(buttontype, basestring):
-        if buttontype is "Button1":
-            buttontype = X.Button1
-        elif buttontype is "Button2":
-            buttontype = X.Button2
-        elif buttontype is "Button3":
-            buttontype = X.Button3
+    if isinstance(button, basestring):
+        if button is "Button1":
+            button = X.Button1
+        elif button is "Button2":
+            button = X.Button2
+        elif button is "Button3":
+            button = X.Button3
         else:
             return False
-    elif not buttontype in (X.Button1, X.Button2, X.Button3):
+    elif not button in (X.Button1, X.Button2, X.Button3):
         return False
 
     if targetwindow.get_wm_name() is None and targetwindow.get_wm_class() is None:
@@ -66,7 +66,14 @@ def do_mouse_click(buttontype):
     target_xpos = ret.x
     target_ypos = ret.y
 
-    myevent_press = protocol.event.ButtonPress(detail = buttontype,
+    if target:
+        for target in target:
+            if target in targetwindow.get_wm_class():
+                break
+        else:
+            return False
+
+    myevent_press = protocol.event.ButtonPress(detail = button,
                                             root=root,
                                             root_x=root_xpos,
                                             root_y=root_ypos,
@@ -77,7 +84,7 @@ def do_mouse_click(buttontype):
                                             state=0,
                                             time=X.CurrentTime,
                                             child=0)
-    myevent_release = protocol.event.ButtonRelease(detail = buttontype,
+    myevent_release = protocol.event.ButtonRelease(detail = button,
                                                 root=root,
                                                 root_x=root_xpos,
                                                 root_y=root_ypos,
@@ -104,7 +111,7 @@ def do_mouse_click(buttontype):
     return True
 
 
-def do_key_press(*keys):
+def do_key_press(keys, target=None):
     """
     executes a keypress
 
@@ -130,6 +137,14 @@ def do_key_press(*keys):
     ret = targetwindow.translate_coords(root, root_xpos, root_ypos)
     target_xpos = ret.x
     target_ypos = ret.y
+
+    if target and targetwindow.get_wm_class():
+        for t in target:
+            if t in targetwindow.get_wm_class():
+                break
+        else:
+            log.info("Window '%s' not found in target(s) %s" % (targetwindow.get_wm_class(), target))
+            return False
 
     def send_key(display, window, keycodes):
         '''Send a KeyPress and KeyRelease event'''

@@ -8,13 +8,12 @@ import sys, dbus, subprocess, os
 
 from kitt.actions import Actions
 
-def dbus_message(service, obj_path, parameters):
+def dbus_message(service, obj_path, method, *parameters):
     service = interface = '%s' % (service,)
     session_bus = dbus.SessionBus()
     proxy = session_bus.get_object(service, obj_path)
     obj = dbus.Interface(proxy, interface)
-    getattr(parameters[0])(*parameters[1:])
+    getattr(method)(*parameters)
 
 ACTIONS = dict(send_dbus=dbus_message)
-
 

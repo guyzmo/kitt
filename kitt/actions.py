@@ -100,7 +100,7 @@ class Actions():
             prm = act["parameters"]
 
             if fun in self._functions.keys():
-                self._functions[fun](*prm)
+                self._functions[fun](**prm)
             else:
                 log.error("Action not found: %s" % fun)
 
