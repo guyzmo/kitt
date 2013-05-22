@@ -125,8 +125,9 @@ switch to next workspace
     { 
       "function": "send_dbus",
       "parameters": { 
-        "service": "service", 
-        "object": "object",
+        "service": "name.of.the.service", 
+        "path": "/path/to/the/object",
+        "method": "methodName"
         "parameters": ["param1", "param2"...]
       }
     } 
