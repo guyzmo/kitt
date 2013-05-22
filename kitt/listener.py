@@ -20,10 +20,10 @@ def make_gesture(name, point_list):
     return g
 
 class Listener(EventDispatcher):
-    def __init__(self, config, *args, **kwarg):
+    def __init__(self, config, gestures, *args, **kwarg):
         super(EventDispatcher, self).__init__(*args, **kwarg)
         self._gdb = GestureDatabase()
-        self._actions = Actions(config)
+        self._actions = Actions(config, gestures)
         for gest_n, gest_r in self._actions.get_gestures().iteritems():
             for g in gest_r:
                 g = self._gdb.str_to_gesture(g)

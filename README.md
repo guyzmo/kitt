@@ -18,6 +18,8 @@ This application is still not on pipy. Meanwhile:
 CONFIGURE
 ---------
 
+ * actions configuration file: `config_actions.json`
+
 To add a new gesture and bind actions, you shall create a configuration file, either in the default
 path: `~/.kivy/kitt.json` or a file you can specify using a command line option.
 
@@ -25,12 +27,6 @@ To configure, the file shall match the following format, be careful, every comma
 
     {
         "engines": [],
-        "gestures": {
-            "move_down" : [],
-            "move_up"   : [],
-            "move_left" : [],
-            "move_right": []
-        },
         "actions": {
             "pinch_in"          : [],
             "pinch_out"         : [],
@@ -49,15 +45,25 @@ To configure, the file shall match the following format, be careful, every comma
         }
     }
 
- * The `engines` key can contain three plugins: `xlib`, `wnck` and `dbus`.
- * The `gestures` key contains the specific gestures for your touch device. To record them, 
-   you have to execute kitt as follows, and copy the long ununderstandable strings that it outputs
-   for each gesture you want to record.
+    * The `engines` key can contain three plugins: `xlib`, `wnck` and `dbus`.
+    * The `action` key contains for each known common multitouch gesture the action to trigger,
+    that depends on the engine you use.
 
-    kitt foreground -v
+ * gestures configuration file: `config_gestures.json`:
 
- * The `action` key contains for each known common multitouch gesture the action to trigger,
-   that depends on the engine you use.
+        {
+            "move_down" : [],
+            "move_up"   : [],
+            "move_left" : [],
+            "move_right": []
+        }
+
+    * The `gestures` key contains the specific gestures for your touch device. To record them, 
+    you have to execute kitt as follows, and copy the long ununderstandable strings that it outputs
+    for each gesture you want to record.
+
+        kitt foreground -v
+
 
 Here are the different actions available:
 
@@ -88,6 +94,11 @@ To add a new gesture, or new way to interact, you can copy and base your work up
 basic dbus interaction function.
 
 Please fork the project, and send me back patches!
+
+TODO
+----
+
+ * implement pinch\_in/pinch\_out features
 
 LICENSE
 -------

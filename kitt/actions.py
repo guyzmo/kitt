@@ -10,7 +10,7 @@ import json
 import os.path
 
 class Actions():
-    def __init__(self, config):
+    def __init__(self, actions_config, gestures_config):
         self._actions = dict(pinch_in=[],
                              pinch_out=[],
                              two_swipe_up=[],
@@ -28,13 +28,14 @@ class Actions():
         self._functions = dict()
         self._gestures = dict()
         try:
-            with open(os.path.expanduser(config)) as config:
+            with open(os.path.expanduser(gestures_config)) as config:
+                self._gestures = json.load(config)
+            with open(os.path.expanduser(actions_config)) as config:
                 config = json.load(config)
                 for engine in config['engines']:
                     plugin = imp.load_source("kitt.plugin_%s" % engine,
                                             "%s/plugin_%s.py" % (os.path.dirname(__file__), engine))
                     self._functions.update(plugin.ACTIONS)
-                self._gestures = config["gestures"]
                 actions = config["actions"]
                 for gesture, act_l in self._actions.iteritems():
                     if gesture in actions.keys():
@@ -49,11 +50,9 @@ class Actions():
         return self._gestures
 
     def before(self):
-        # XT.grab_mouse()
         pass
 
     def after(self):
-        # XT.ungrab_mouse()
         pass
 
     def dispatch(self, gestures, gdb):
@@ -100,15 +99,10 @@ class Actions():
             fun = act["function"]
             prm = act["parameters"]
 
-
             if fun in self._functions.keys():
                 self._functions[fun](*prm)
             else:
                 log.error("Action not found: %s" % fun)
 
         return True
-
-
-
-
 

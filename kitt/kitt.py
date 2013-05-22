@@ -15,7 +15,12 @@ def run():
     parser.add_argument("-c", "--config",
                         dest="config",
                         action="store",
-                        default="~/.kivy/kitt.json",
+                        default="~/.kivy/kitt_config.json",
+                        help="Select the gesture plugin")
+    parser.add_argument("-g", "--gestures",
+                        dest="gestures",
+                        action="store",
+                        default="~/.kivy/kitt_gestures.json",
                         help="Select the gesture plugin")
     parser.add_argument("-p", "--pid",
                         dest="pid",
@@ -28,13 +33,17 @@ def run():
                         dest='commands')
 
     def main(args):
+        sys.argv = sys.argv[0:1]
         from kivy.logger import Logger, logging
         log = Logger.getChild("KiTT")
-        Logger.setLevel(logging.ERROR)
+        if args.verbose:
+            Logger.setLevel(logging.DEBUG)
+        else:
+            Logger.setLevel(logging.ERROR)
         from kivy.base import EventLoop, runTouchApp
         from listener import Listener
 
-        EventLoop.add_event_listener(Listener(args.config))
+        EventLoop.add_event_listener(Listener(args.config, args.gestures))
         runTouchApp()
 
     class Main(Daemon):
@@ -58,10 +67,6 @@ def run():
                           help = "Start in foreground").set_defaults(func=do_foreground)
 
     args = parser.parse_args(sys.argv[1:])
-
-    if args.verbose:
-        Logger.setLevel(logging.DEBUG)
-
     args.func(args)
 
 if __name__ == "__main__":
