@@ -11,9 +11,9 @@ INSTALL
 
 This application is still not on pipy. Meanwhile:
 
-git clone https://github.com/guyzmo/kitt.git
-cd kitt
-python setup.py install
+    % git clone https://github.com/guyzmo/kitt.git
+    % cd kitt
+    % python setup.py install
 
 CONFIGURE
 ---------
@@ -49,7 +49,7 @@ To configure, the file shall match the following format, be careful, every comma
         }
     }
 
- * The `engines` key can contain three plugins: `xlib`, `wmck` and `dbus`.
+ * The `engines` key can contain three plugins: `xlib`, `wnck` and `dbus`.
  * The `gestures` key contains the specific gestures for your touch device. To record them, 
    you have to execute kitt as follows, and copy the long ununderstandable strings that it outputs
    for each gesture you want to record.
@@ -63,16 +63,13 @@ Here are the different actions available:
 
  * `xlib` engine:
     * `{ "function": "workspace", parameters: ["N"] }` switch current worskpace, N being the number of workspaces to jump over (can be a positive or negative number)
-    * `{ "function": "keypress", parameters: ["KEY1", "KEY2"] }` executes a key stroke, which can be a combination of several keys (modifier keys, or input keys)
+    * `{ "function": "keypress", parameters: ["KEY1", "KEY2"] }` executes a key stroke, which can be a combination of several keys (modifier keys, or input keys from the list below)
     * `{ "function": "mouseclick", parameters: ["Button1"] }` executes a click (can be either `Button1`, `Button2`, `Button3`, `button4`, `Button5`)
- * `wmck` engine:
+ * `wnck` engine:
    * `{ "function": "workspace_up", parameters: [] }` switch to previous workspace
    * `{ "function": "workspace_down", parameters: [] }` switch to next workspace
  * `dbus` engine:
    * still has to be implemented, but I expect to code a `send_message` function that will take a full dbus message as parameter.
-
-For the keys to be implemented in keypress function, I will add a documentation in the wiki, but for the time being, you
-can take their name from the Xlib.XK package, without the `XK_` prefix.
 
 DEVELOP
 -------
@@ -87,7 +84,7 @@ EXTEND
 ------
 
 To add a new gesture, or new way to interact, you can copy and base your work upon
-`$SRC/kitt/plugin_wmck.py` or `plugin_xlib.py`. The engine `plugin_dbus.py` has a 
+`$SRC/kitt/plugin_wnck.py` or `plugin_xlib.py`. The engine `plugin_dbus.py` has a 
 basic dbus interaction function.
 
 Please fork the project, and send me back patches!
@@ -96,4 +93,81 @@ LICENSE
 -------
 
 This whole software is released under the GPLv3.
+
+LIST OF KEYS
+------------
+
+    0                  F33                L2                 Touroku            idiaeresis
+    1                  F34                L3                 U                  igrave
+    2                  F35                L4                 Uacute             j
+    3                  F4                 L5                 Ucircumflex        k
+    4                  F5                 L6                 Udiaeresis         l
+    5                  F6                 L7                 Ugrave             less
+    6                  F7                 L8                 Undo               m
+    7                  F8                 L9                 Up                 macron
+    8                  F9                 Left               V                  masculine
+    9                  Find               Linefeed           W                  minus
+    A                  G                  M                  X                  mu
+    AE                 H                  Mae_Koho           Y                  multiply
+    Aacute             Hankaku            Massyo             Yacute             n
+    Acircumflex        Help               Menu               Z                  nobreakspace
+    Adiaeresis         Henkan             Meta_L             Zen_Koho           notsign
+    Agrave             Henkan_Mode        Meta_R             Zenkaku            ntilde
+    Alt_L              Hiragana           Mode_switch        Zenkaku_Hankaku    numbersign
+    Alt_R              Hiragana_Katakana  Muhenkan           a                  o
+    Aring              Home               Multi_key          aacute             oacute
+    Atilde             Hyper_L            MultipleCandidate  acircumflex        ocircumflex
+    B                  Hyper_R            N                  acute              odiaeresis
+    BackSpace          I                  Next               adiaeresis         ograve
+    Begin              Iacute             Ntilde             ae                 onehalf
+    Break              Icircumflex        Num_Lock           agrave             onequarter
+    C                  Idiaeresis         O                  ampersand          onesuperior
+    Cancel             Igrave             Oacute             apostrophe         ordfeminine
+    Caps_Lock          Insert             Ocircumflex        aring              oslash
+    Ccedilla           J                  Odiaeresis         asciicircum        otilde
+    Clear              K                  Ograve             asciitilde         p
+    Control_L          KP_0               Ooblique           asterisk           paragraph
+    Control_R          KP_1               Otilde             at                 parenleft
+    D                  KP_2               P                  atilde             parenright
+    Delete             KP_3               Page_Down          b                  percent
+    Down               KP_4               Page_Up            backslash          period
+    E                  KP_5               Pause              bar                periodcentered
+    ETH                KP_6               PreviousCandidate  braceleft          plus
+    Eacute             KP_7               Print              braceright         plusminus
+    Ecircumflex        KP_8               Prior              bracketleft        q
+    Ediaeresis         KP_9               Q                  bracketright       question
+    Egrave             KP_Add             R                  brokenbar          questiondown
+    Eisu_Shift         KP_Begin           R1                 c                  quotedbl
+    Eisu_toggle        KP_Decimal         R10                ccedilla           quoteleft
+    End                KP_Delete          R11                cedilla            quoteright
+    Escape             KP_Divide          R12                cent               r
+    Eth                KP_Down            R13                colon              registered
+    Execute            KP_End             R14                comma              s
+    F                  KP_Enter           R15                copyright          script_switch
+    F1                 KP_Equal           R2                 currency           section
+    F10                KP_F1              R3                 d                  semicolon
+    F11                KP_F2              R4                 degree             slash
+    F12                KP_F3              R5                 diaeresis          space
+    F13                KP_F4              R6                 division           ssharp
+    F14                KP_Home            R7                 dollar             sterling
+    F15                KP_Insert          R8                 e                  t
+    F16                KP_Left            R9                 eacute             thorn
+    F17                KP_Multiply        Redo               ecircumflex        threequarters
+    F18                KP_Next            Return             ediaeresis         threesuperior
+    F19                KP_Page_Down       Right              egrave             twosuperior
+    F2                 KP_Page_Up         Romaji             equal              u
+    F20                KP_Prior           S                  eth                uacute
+    F21                KP_Right           Scroll_Lock        exclam             ucircumflex
+    F22                KP_Separator       Select             exclamdown         udiaeresis
+    F23                KP_Space           Shift_L            f                  ugrave
+    F24                KP_Subtract        Shift_Lock         g                  underscore
+    F25                KP_Tab             Shift_R            grave              v
+    F26                KP_Up              SingleCandidate    greater            w
+    F27                Kana_Lock          Super_L            guillemotleft      x
+    F28                Kana_Shift         Super_R            guillemotright     y
+    F29                Kanji              Sys_Req            h                  yacute
+    F3                 Katakana           T                  hyphen             ydiaeresis
+    F30                L                  THORN              i                  yen
+    F31                L1                 Tab                iacute             z
+    F32                L10                Thorn              icircumflex        
 
