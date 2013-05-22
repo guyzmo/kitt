@@ -6,6 +6,9 @@ import argparse
 from daemon import Daemon
 
 def run():
+    """
+    main function that parses the cli arguments and starts the application
+    """
     parser = argparse.ArgumentParser(prog=sys.argv[0],
                                      description="KiTT: Kivy Touch Tool")
     parser.add_argument("-v", "--verbose",
@@ -33,6 +36,9 @@ def run():
                         dest='commands')
 
     def main(args):
+        """
+        subfunction that launches the application
+        """
         sys.argv = sys.argv[0:1]
         from kivy.logger import Logger, logging
         log = Logger.getChild("KiTT")
@@ -47,6 +53,9 @@ def run():
         runTouchApp()
 
     class Main(Daemon):
+        """
+        Daemonification class
+        """
         def run(self):
             main(self.args)
 

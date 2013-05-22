@@ -39,7 +39,8 @@ def do_mouse_click(button, target=None):
     """
     executes mouse button click
 
-    button: X.Button1, X.Button2 or X.Button3 depending on which button to be triggered
+    :param button: X.Button1, X.Button2 or X.Button3 depending on which button to be triggered
+    :param target: list containing name(s) of the target window
     """
     log.debug("do_mouse_click")
     root = disp.screen().root
@@ -115,7 +116,8 @@ def do_key_press(keys, target=None):
     """
     executes a keypress
 
-    keys: argument tuple containing one or several modifier keys, and the key to press
+    :param keys: argument tuple containing one or several modifier keys, and the key to press
+    :param target: list containing name(s) of the target window
 
     the key to pass as a parameter has to be taken from Xlib.XK library
     """
@@ -169,7 +171,7 @@ def switch_workspace(direction):
     """
     switches workspace
 
-    direction: +1 for next workspace, -1 for previous workspace.
+    :param direction: +1 for next workspace, -1 for previous workspace.
     """
     log.debug("switch_workspace")
     screen = disp.screen()

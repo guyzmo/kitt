@@ -20,7 +20,15 @@ def make_gesture(name, point_list):
     return g
 
 class Listener(EventDispatcher):
+    """
+    listener function that queries kivy for touch events, builds the gesture
+    and dispatch it through the actions singleton.
+    """
     def __init__(self, config, gestures, *args, **kwarg):
+        """
+        :param config: string containing the path to the action configuration
+        :param gestures: string containing the path to the gestures configuration
+        """
         super(EventDispatcher, self).__init__(*args, **kwarg)
         self._gdb = GestureDatabase()
         self._actions = Actions(config, gestures)
@@ -33,11 +41,19 @@ class Listener(EventDispatcher):
         self._multitouches = []
 
     def on_touch_down(self, touch):
+        """
+        listening function executed at begining of touch event
+        builds the gesture
+        """
         self._multitouches.append(touch)
         touch.ud['line'] = Line(points=(touch.sx, touch.sy))
         return True
 
     def on_touch_move(self, touch):
+        """
+        listening function executed during touch event
+        store points of the gesture
+        """
         # store points of the touch movement
         try:
             touch.ud['line'].points += [touch.sx, touch.sy]
@@ -46,8 +62,10 @@ class Listener(EventDispatcher):
             pass
 
     def on_touch_up(self, touch):
-        # touch is over, display informations, and check if it matches some
-        # known gesture.
+        """
+        touch is over, display informations, and check if it matches some
+        known gesture.
+        """
         if len(self._multitouches) is 0:
             return True
 
@@ -63,6 +81,9 @@ class Listener(EventDispatcher):
         self._multitouches = []
 
     def on_motion(self, etype, me):
+        """
+        dispatches motion events
+        """
         if etype == "begin":
             self.on_touch_down(me)
         elif etype == "update":
@@ -73,6 +94,9 @@ class Listener(EventDispatcher):
             log.error("Receive unknown event of type '%r': %s" % (etype, me))
 
     def dispatch(self, ev_type, ev_action, ev):
+        """
+        dispatches motion events
+        """
         if ev_type == "on_motion":
             self.on_motion(ev_action, ev)
         else:

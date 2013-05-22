@@ -10,7 +10,16 @@ import json
 import os.path
 
 class Actions():
+    """
+    This class loads all the actions and gesture, and does the binding between
+    them. Then, when a gesture is found by the listener, the gesture gets dispatched.
+    """
     def __init__(self, actions_config, gestures_config):
+        """
+        Build and load actions and gestures from files
+        :param actions_config: string containing the path to the actions JSON file
+        :param gestures_config: string containing the path to the gestures JSON file
+        """
         self._actions = dict(pinch_in=[],
                              pinch_out=[],
                              two_swipe_up=[],
@@ -47,15 +56,30 @@ class Actions():
             log.debug("No configuration file found")
 
     def get_gestures(self):
+        """
+        :return: the gesture dict
+        """
         return self._gestures
 
     def before(self):
+        """
+        safeguard function to be called before a touch is defined
+        """
         pass
 
     def after(self):
+        """
+        safeguard function to be called after a touch is defined
+        """
         pass
 
     def dispatch(self, gestures, gdb):
+        """
+        dispatches found gestures, matched using the gesture database into
+        gesture events.
+        :param gestures: list of live gestures
+        :param gdb: kivy's gesture database object
+        """
         d = u = l = r = 0
         for gesture in gestures:
             if gesture is None:
