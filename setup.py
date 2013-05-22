@@ -31,9 +31,10 @@ setup(name='KiTT',
       license='GPLv3',
       packages=['kitt'],
       zip_safe=False,
+      data_files=[('config', ['etc/kitt_config.json', 'etc/kitt_gestures.json'])],
       install_requires=[
           'kivy',
-          'Python_Xlib',
+          #'Python_Xlib',
           'argparse',
           'setuptools',
       ],
@@ -48,9 +49,9 @@ if "install" in sys.argv:
     print """
 Kitt is now installed!
 
-Please install wnck package:
+Please install wnck and xlib package:
 
-    `apt-get install python-wnck`
+    `apt-get install python-wnck python-xlib`
 
 Don't forget to add kitt to your .xsession/.xinit file!
 
