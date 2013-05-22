@@ -10,6 +10,8 @@ KiTT takes advantage of the awesome work done by the [Kivy](http://kivy.org) tea
 touch and gesture detection framework. Your mouse has to be detected by Kivy in order
 to work with KiTT, and thus shall exists as a known `/dev/input/event?` device.
 
+And [here](http://nothing.to/blog/2013/05/22/kitt:-a-multitouch-gesture-tool-based-on-kivy) I wrote a blog post about it!
+
 INSTALL
 -------
 
@@ -107,6 +109,7 @@ Please fork the project, and send me back patches!
 TODO
 ----
 
+ * implement application selection for xlib plugin ;
  * create a compilation of touches in the gesture file for different input devices, and select them at runtime ;
  * implement pinch\_in/pinch\_out features and other weird gestures ;
  * create a GUI, like BTT's
