@@ -6,6 +6,10 @@ for Xorg UI control. It is based on Kivy for gesture detection and can run a var
 of plugins to control the UI. You can easily configure your gestures using a json 
 configuration file.
 
+KiTT takes advantage of the awesome work done by the [Kivy](http://kivy.org) team on
+touch and gesture detection framework. Your mouse has to be detected by Kivy in order
+to work with KiTT, and thus shall exists as a known `/dev/input/event?` device.
+
 INSTALL
 -------
 
@@ -14,6 +18,9 @@ This application is still not on pipy. Meanwhile:
     % git clone https://github.com/guyzmo/kitt.git
     % cd kitt
     % python setup.py install
+
+To run it at startup of Xorg, don't forget to add `kitt start` in your `.xinitrc` or `.xsession` file!
+
 
 CONFIGURE
 ---------
