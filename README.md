@@ -25,6 +25,8 @@ To run it at startup of Xorg, don't forget to add `kitt start` in your `.xinitrc
 CONFIGURE
 ---------
 
+Have a look at kivy specific [configuration options](http://kivy.org/docs/guide/config.html)
+
  * actions configuration file: `config_actions.json`
 
 To add a new gesture and bind actions, you shall create a configuration file, either in the default
@@ -105,7 +107,9 @@ Please fork the project, and send me back patches!
 TODO
 ----
 
- * implement pinch\_in/pinch\_out features
+ * create a compilation of touches in the gesture file for different input devices, and select them at runtime ;
+ * implement pinch\_in/pinch\_out features and other weird gestures ;
+ * create a GUI, like BTT's
 
 LICENSE
 -------
