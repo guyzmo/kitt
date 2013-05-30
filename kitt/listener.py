@@ -7,6 +7,8 @@ from kivy.event import EventDispatcher
 from kivy.graphics import Line
 from kivy.gesture import Gesture, GestureDatabase
 
+import pyudev
+
 from actions import Actions
 
 def make_gesture(name, point_list):
@@ -24,21 +26,31 @@ class Listener(EventDispatcher):
     listener function that queries kivy for touch events, builds the gesture
     and dispatch it through the actions singleton.
     """
-    def __init__(self, config, gestures, *args, **kwarg):
+    def __init__(self, config, gestures, el, *args, **kwarg):
         """
         :param config: string containing the path to the action configuration
         :param gestures: string containing the path to the gestures configuration
         """
         super(EventDispatcher, self).__init__(*args, **kwarg)
+        self._event_loop = el
         self._gdb = GestureDatabase()
         self._actions = Actions(config, gestures)
+        self.update_devices()
+        self._multitouches = []
+
+    def update_devices(self):
+        log.debug('update_devices()')
+        context = pyudev.Context()
+        for device in context.list_devices(subsystem='input', ID_INPUT_MOUSE=True):
+            if device.sys_name.startswith('event'):
+                if 'PRODUCT' in device.parent.keys():
+                    self._actions.update_gestures(device.parent['PRODUCT'])
         for gest_n, gest_r in self._actions.get_gestures().iteritems():
             for g in gest_r:
                 g = self._gdb.str_to_gesture(g)
                 g.normalize()
                 g.name = gest_n
                 self._gdb.add_gesture(g)
-        self._multitouches = []
 
     def on_touch_down(self, touch):
         """

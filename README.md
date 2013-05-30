@@ -153,7 +153,6 @@ Please fork the project, and send me back patches!
 TODO
 ----
 
- * create a compilation of touches in the gesture file for different input devices, and select them at runtime ;
  * implement pinch\_in/pinch\_out features and other weird gestures ;
  * create a GUI, like BTT's
 

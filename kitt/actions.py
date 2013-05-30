@@ -36,9 +36,8 @@ class Actions():
                              four_swipe_right=[])
         self._functions = dict()
         self._gestures = dict()
+        self._gestures_config = gestures_config
         try:
-            with open(os.path.expanduser(gestures_config)) as config:
-                self._gestures = json.load(config)
             with open(os.path.expanduser(actions_config)) as config:
                 config = json.load(config)
                 for engine in config['engines']:
@@ -54,6 +53,13 @@ class Actions():
                         log.error("Unable to load gesture: '%s' unknown" % gesture)
         except IOError:
             log.debug("No configuration file found")
+
+    def update_gestures(self, model):
+        log.debug('update_gestures')
+        with open(os.path.expanduser(self._gestures_config)) as config:
+            gestures = json.load(config)
+            if model in gestures.keys():
+                self._gestures.update(gestures[model])
 
     def get_gestures(self):
         """
