@@ -1,0 +1,2 @@
+include etc/kitt_config.json
+include etc/kitt_gestures.json
