@@ -3,7 +3,45 @@
 import sys
 import argparse
 
+import threading
+
 from daemon import Daemon
+
+import pyudev
+import pyudev.glib
+
+class UdevListener(threading.Thread):
+    def __init__(self, gobject_loop, el, log):
+        threading.Thread.__init__(self)
+        self._gobject_loop = gobject_loop
+        self._event_loop = el
+        self.log = log
+
+    def device_added(self, observer, device):
+        for inp in self._event_loop.input_providers:
+            if device.sys_name == inp.device:
+                self.log.debug("Device '%s' added ; starting event loop" % (device.sys_name,))
+                self._event_loop.start()
+
+    def device_removed(self, observer, device):
+        for inp in self._event_loop.input_providers:
+            if device.sys_name == inp.device:
+                self.log.debug("Device '%s' removed ; stopping event loop" % (device.sys_name,))
+                self._event_loop.stop()
+
+    def run(self):
+        self.log.debug("Starting udev listener")
+        context = pyudev.Context()
+        monitor = pyudev.Monitor.from_netlink(context)
+        observer = pyudev.glib.GUDevMonitorObserver(monitor)
+
+        observer.connect('device-added', self.device_added)
+        observer.connect('device-removed', self.device_removed)
+
+        monitor.enable_receiving()
+
+        self._gobject_loop()
+
 
 def run():
     """
@@ -46,10 +84,13 @@ def run():
             Logger.setLevel(logging.DEBUG)
         else:
             Logger.setLevel(logging.ERROR)
-        from kivy.base import EventLoop, runTouchApp
+        from kivy.base import EventLoop, runTouchApp, stopTouchApp
+        from kivy.support import install_gobject_iteration
+
         from listener import Listener
 
-        EventLoop.add_event_listener(Listener(args.config, args.gestures))
+        EventLoop.add_event_listener(Listener(args.config, args.gestures, EventLoop))
+        UdevListener(install_gobject_iteration, EventLoop, log).start()
         runTouchApp()
 
     class Main(Daemon):
