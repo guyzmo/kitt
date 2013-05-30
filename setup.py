@@ -20,7 +20,7 @@ long_description = """
 """ % read('README.md')
 
 setup(name='KiTT',
-      version='1.0',
+      version='1.1',
       description="Kivy Touch Tool",
       long_description=long_description,
       # classifiers=[],
@@ -34,7 +34,9 @@ setup(name='KiTT',
       data_files=[('config', ['etc/kitt_config.json', 'etc/kitt_gestures.json'])],
       install_requires=[
           'kivy',
-          #'Python_Xlib',
+          'python-xlib',
+          'pyudev',
+          'PyGTK',
           'argparse',
           'setuptools',
       ],

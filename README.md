@@ -15,11 +15,9 @@ And [here](http://nothing.to/blog/2013/05/22/kitt:-a-multitouch-gesture-tool-bas
 INSTALL
 -------
 
-This application is still not on pipy. Meanwhile:
+To install the application, just get it from pipy:
 
-    % git clone https://github.com/guyzmo/kitt.git
-    % cd kitt
-    % python setup.py install
+    pip install kitt
 
 To run it at startup of Xorg, don't forget to add `kitt start` in your `.xinitrc` or `.xsession` file!
 
