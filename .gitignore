@@ -5,3 +5,7 @@ bin
 *.egg-info
 .ropeproject
 .installed.cfg
+contrib
+build
+dist
+docs
